@@ -10,8 +10,8 @@ window.addEventListener('DOMContentLoaded', function() {
           var camera = new BABYLON.ArcRotateCamera(
                'Camera',
                Math.PI / 2,
-               Math.PI / 2,
-               2,
+               Math.PI / 4,
+               5,
                BABYLON.Vector3.Zero(),
                scene
           );
@@ -29,30 +29,17 @@ window.addEventListener('DOMContentLoaded', function() {
                scene
           );
 
-          //this is where you create and manipulate meshes
-          // var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {}, scene);
+          BABYLON.SceneLoader.Append("./", "1a.glb", scene, function (scene) {
+               console.log(scene)
+          });
 
-          var redMat = new BABYLON.StandardMaterial('redMat', scene);
-          redMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
-          redMat.alpha = 0.25;
-
-          var greenMat = new BABYLON.StandardMaterial('greenMat', scene);
-          greenMat.diffuseColor = new BABYLON.Color3(0, 1, 0);
-          greenMat.alpha = 0.5;
-
-          //Red
-          var sphere1 = BABYLON.MeshBuilder.CreateSphere('sphere1', {}, scene);
-          sphere1.material = redMat;
-          sphere1.position.z = 1.5;
-
-          //Green Transparent
-          var sphere2 = BABYLON.MeshBuilder.CreateSphere('sphere2', {}, scene);
-          sphere2.material = greenMat;
 
           return scene;
      };
 
-     var scene = createScene();
+
+     var scene = createScene()
+     // window.scene = scene
      engine.runRenderLoop(function() {
           scene.render();
      });
