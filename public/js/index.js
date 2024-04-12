@@ -1,77 +1,78 @@
-window.addEventListener('DOMContentLoaded', function() {
-     var canvas = document.getElementById('canvas');
-     var engine = new BABYLON.Engine(canvas, true);
+import {EnvironmentTools} from "../tools/environmentTools.js";
+
+window.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('canvas');
+    var engine = new BABYLON.Engine(canvas, true, {
+        useHighPrecisionMatrix: true,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: true,
+        antialias: true,
+        forceSRGBBufferSupportState: true,
+    });
+
+    var createScene = function () {
+        // Create the scene space
+        var scene = new BABYLON.Scene(engine);
+
+        // add a camera to the scene and attach it to the canvas
+        var camera = new BABYLON.ArcRotateCamera(
+            'Camera',
+            Math.PI / 2,
+            Math.PI / 2,
+            5,
+            new BABYLON.Vector3(0, 5, 20),
+            scene
+        );
+        camera.attachControl(canvas, true);
+        var light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(-1, -2, -1), scene);
+
+        light.position = new BABYLON.Vector3(20, 40, 20);
+        light.intensity = 0.5;
 
 
-     var createScene = function() {
-          // Create the scene space
-          var scene = new BABYLON.Scene(engine);
-
-          // add a camera to the scene and attach it to the canvas
-          var camera = new BABYLON.ArcRotateCamera(
-               'Camera',
-               Math.PI / 2,
-               Math.PI / 4,
-               5,
-               BABYLON.Vector3.Zero(),
-               scene
-          );
-          camera.attachControl(canvas, true);
-
-          //Add lights to scene
-          var light1 = new BABYLON.HemisphericLight(
-               'hemiLight',
-               new BABYLON.Vector3(-1, 1, 0),
-               scene
-          );
-          light1.diffuse = new BABYLON.Color3(1, 1, 1);
-          // // light1.intensity = 1;
-          //
-          var light2 = new BABYLON.PointLight(
-               'light2',
-               new BABYLON.Vector3(-1, 0, -1),
-               scene
-          );
-          // light2.intensity = 2;
+        BABYLON.SceneLoader.Append("./", "City_Mirror-60_600х900.glb", scene)
 
 
-
-          BABYLON.SceneLoader.Append("./", "BigTriplexHouseVilla.glb", scene, function (scene) {
-
-               const materials = scene.materials
-               const doorMaterial = materials.find(({name}) => name === "MI_CupboardDoor")
-               const meshes = scene.meshes
-               const dishwasher = meshes.find(({name}) => name === "SM_Dishwasher_68_StaticMeshComponent0")
-
-               // dishwasher.material = new BABYLON.StandardMaterial("mirrorMaterial", scene);
-               // dishwasher.material.reflectionTexture = new BABYLON.MirrorTexture("mirrorTexture", 512, scene, true);
-               // dishwasher.material.reflectionTexture.mirrorPlane = BABYLON.Plane.FromPositionAndNormal(
-               //     dishwasher.position, mesh.getFacetNormal(0).scale(-1));
-               // dishwasher.material.reflectionTexture.renderList = meshes
-               meshes.forEach((el) => {
-                    var mat1 = new BABYLON.StandardMaterial("mat0", scene);
-                    mat1.ambientColor = new BABYLON.Color3(0.8,1,1)
-                    // mat0.bumpTexture = new BABYLON.Texture("https://cdn.shopify.com/s/files/1/0228/1393/3604/products/2020-01-29_23_25_30-Candium___Helena_Flooring_1200x1200.png", scene)
-                    mat1.diffuseColor = new BABYLON.Color3(1,1,1)
-                    el.material = mat1
-               })
-               var mat0 = new BABYLON.StandardMaterial("mat0", scene);
-               mat0.diffuseTexture = new BABYLON.Texture("https://cdn.shopify.com/s/files/1/0228/1393/3604/products/2020-01-29_23_25_30-Candium___Helena_Flooring_1200x1200.png", scene)
-               mat0.diffuseColor = new BABYLON.Color3(1,1,1)
-               dishwasher.material = mat0
-               console.log(dishwasher)
-          });
+        BABYLON.SceneLoader.Append("./", "CityT-100_1000x600.glb", scene, function (scene) {
+            scene.meshes.forEach((mesh, index) => index === 2 && mesh.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z))
+            var shadowGenerator1 = new BABYLON.ShadowGenerator(1024, light)
+            for (let i = 0; i < scene.meshes.length; i++) {
+                if (i !== 0) {
+                    var obj = scene.meshes[i]
+                    console.log(obj)
+                    shadowGenerator1.addShadowCaster(obj);
+                }
+            }
+            shadowGenerator1.useExponentialShadowMap = true;
+            shadowGenerator1.usePoissonSampling = true;
+        })
 
 
+        var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "https://lh3.googleusercontent.com/WhCXUdhXb5DNHxIWCVrJW9J90EUEB3o_EojNoutYAv6zX6HQJUHP0tYpPDFq4JEZIYtsGE0ZOzkpAinVqitBa6vO=w640-h400-e365-rj-sc0x00ffffff", 100, 100, 100, 0, 10, scene, false);
+        var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture("https://lh3.googleusercontent.com/WhCXUdhXb5DNHxIWCVrJW9J90EUEB3o_EojNoutYAv6zX6HQJUHP0tYpPDFq4JEZIYtsGE0ZOzkpAinVqitBa6vO=w640-h400-e365-rj-sc0x00ffffff", scene);
+        groundMaterial.diffuseTexture.uScale = 6;
+        groundMaterial.diffuseTexture.vScale = 6;
+        groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        ground.position.y = -2.05;
+        ground.material = groundMaterial;
+        ground.position = new BABYLON.Vector3(0, -8, 0);
 
-          return scene;
-     };
+
+        scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(scene)
 
 
-     var scene = createScene()
+        ground.receiveShadows = true;
 
-     // window.scene = scene
-     engine.runRenderLoop(function() {
-          scene.render();
-     });
+
+        return scene;
+    };
+
+
+    var scene = createScene()
+
+    // window.scene = scene
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
 });

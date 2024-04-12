@@ -1,5 +1,5 @@
 {
-  "name": "babylon_express_server",
+  "name": "babylon_server_renderer",
   "version": "1.0.0",
   "description": "An implementation of Express and BabylonJS to make it easier to code BabylonJS apps in NodeJS",
   "main": "server.js",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/yazheirx/babylon_express_server#readme",
   "dependencies": {
+    "@babylonjs/core": "^7.2.1",
     "babylonjs": "^3.3.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
